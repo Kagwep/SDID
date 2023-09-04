@@ -1,4 +1,4 @@
-use SDID::contract::SDIDContract::{Person,UserEngagement,UserExperience,UserIdentity};
+use SDID::contract::SDIDContract::{Person,UserEngagement,UserExperience,UserIdentity,UserFinancial};
 
 
 #[starknet::interface]
@@ -13,6 +13,7 @@ trait ISDIDContract<TContractState> {
     fn get_person_experience_data(self: @TContractState, key:felt252) ->  UserExperience;
     fn get_person_engagement_data(self: @TContractState, key:felt252) ->  UserEngagement;
     fn get_person_identity_data(self: @TContractState, key:felt252) ->  UserIdentity;
+    fn get_person_finacial_data(self: @TContractState, key:felt252) ->  UserFinancial;
 }
 
 #[starknet::contract]
@@ -31,6 +32,7 @@ mod SDIDContract {
         user_experienceDID: LegacyMap::<felt252, UserExperience>,
         user_identityDID: LegacyMap::<felt252, UserIdentity>,
         user_engagementDID: LegacyMap::<felt252, UserEngagement>,
+        user_financialInfo:LegacyMap::<felt252, UserFinancial>,
 
     }
 
@@ -40,6 +42,7 @@ mod SDIDContract {
         user_experience: UserExperience,
         user_identity: UserIdentity,
         user_engagement: UserEngagement,
+        user_financial:UserFinancial,
     }
 
     #[derive(Copy, Drop, Serde, starknet::Store)]
@@ -49,6 +52,7 @@ mod SDIDContract {
         phone_number: felt252,
         email: felt252,
         address: felt252,
+        secret_word : felt252,
     }
 
 
@@ -66,7 +70,6 @@ mod SDIDContract {
     #[derive(Copy, Drop, Serde, starknet::Store)]
     struct UserIdentity {
         gender: felt252,
-        user: ContractAddress,
         date_of_birth: felt252,
         nationality: felt252,
         passport_number: felt252,
@@ -82,9 +85,17 @@ mod SDIDContract {
         occupation: felt252,// CID
         employer: felt252, // CID
         marital_status: felt252,
+
+        
+    }
+
+    #[derive(Copy, Drop, Serde, starknet::Store)]
+    struct UserFinancial{
+        user: ContractAddress,
         stark_worth: u64,
         
     }
+    
 
     #[external(v0)]
     #[generate_trait]
@@ -139,7 +150,11 @@ mod SDIDContract {
             let user_engagement = self.user_engagementDID.read(key);
             user_engagement
         }
-
+ 
+        fn get_person_finacial_data(self: @ContractState, key: felt252) -> UserFinancial{
+            let user_financial = self.user_financialInfo.read(key);
+            user_financial
+        }
 
     }
 
@@ -204,6 +219,10 @@ mod SDIDContract {
             user_engagement
         }
 
+        fn _get_user_financial(self: @ContractState, key: felt252) -> UserFinancial{
+            let user_financial = self.user_financialInfo.read(key);
+            user_financial
+        }
 
       
     }
@@ -220,7 +239,7 @@ mod tests {
     use core::array::ArrayTrait;
     use super::SDIDContract;
     use super::{ISDIDContractDispatcher};
-    use SDIDContract::{Person,UserSpine,UserExperience,UserIdentity,UserEngagement};
+    use SDIDContract::{Person,UserSpine,UserExperience,UserIdentity,UserEngagement,UserFinancial};
     use starknet::deploy_syscall;
     use starknet::class_hash::Felt252TryIntoClassHash;
     use poseidon::poseidon_hash_span;
@@ -250,6 +269,7 @@ mod tests {
             phone_number: '07784389382',
             email: 'john@example.com',
             address: '3 123 56',
+            secret_word : 'XXXXXXXX',
         };
 
         let userExperience = UserExperience {
@@ -262,12 +282,11 @@ mod tests {
         };
 
 
-        // let userExperience =  UserExperience{};
+        //  let userExperience =   UserExperience::default;
 
         
         let userIdentity = UserIdentity {
             gender: 'Male', // Gender
-            user: userContractAddress, // User contract address
             date_of_birth: '1990-01-01', // Date of birth
             nationality: 'Kenyan', // Nationality
             passport_number: 'ABC123456', // Passport number
@@ -282,7 +301,12 @@ mod tests {
             occupation: 'CID-Occupation', // CID for occupation
             employer: 'CID-Employer', // CID for employer
             marital_status: 'Single', // Marital status
-            stark_worth: 0, // Stark worth (numeric value)
+        };
+
+        let userFinancial = UserFinancial{
+        user: userContractAddress,
+        stark_worth: 0,
+        
         };
 
         let person = Person {
@@ -290,6 +314,7 @@ mod tests {
             user_experience: userExperience,
             user_identity: userIdentity,
             user_engagement: userEngagement,
+            user_financial:userFinancial,
         };
 
         person
