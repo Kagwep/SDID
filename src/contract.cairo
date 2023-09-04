@@ -246,7 +246,7 @@ mod tests {
     use starknet::{ContractAddress,contract_address_const};
 
 
-       // Deploy the contract and return its dispatcher.
+       
     fn deploy() -> ISDIDContractDispatcher {
         // Set up constructor arguments.
         let mut calldata: Array<felt252> = ArrayTrait::new();
