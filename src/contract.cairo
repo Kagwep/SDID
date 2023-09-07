@@ -14,6 +14,7 @@ trait ISDIDContract<TContractState> {
     fn get_person_engagement_data(self: @TContractState, key:felt252) ->  UserEngagement;
     fn get_person_identity_data(self: @TContractState, key:felt252) ->  UserIdentity;
     fn get_person_finacial_data(self: @TContractState, key:felt252) ->  UserFinancial;
+    fn get_number(self: @TContractState) -> u64;
 }
 
 #[starknet::contract]
@@ -65,7 +66,6 @@ mod SDIDContract {
         hobbies: felt252, // CID
         interests: felt252, // CID
     }
-
 
     #[derive(Copy, Drop, Serde, starknet::Store)]
     struct UserIdentity {
@@ -156,6 +156,10 @@ mod SDIDContract {
             user_financial
         }
 
+        fn get_number(self: @ContractState) -> u64{
+            30
+        }
+
     }
 
 
@@ -171,8 +175,6 @@ mod SDIDContract {
             let user_hashed_key = poseidon_hash_span(person);
             self.personDID.write(hashed_key,value);
             
-           
-
             let mut serialized_spine: Array<felt252> = ArrayTrait::new();
             Serde::<UserSpine>::serialize(@value.user_spine, ref serialized_spine);
             let hashed_spine = poseidon_hash_span(serialized_spine.span());
